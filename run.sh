@@ -12,6 +12,11 @@ if [ "${AWS_SECRET_ACCESS_KEY}" = "**None**" ]; then
   exit 1
 fi
 
+if [ "${AWS_REGION}" = "**None**" ]; then
+  echo "You need to set the AWS_REGION environment variable."
+  exit 1
+fi
+
 if [ "${AWS_BUCKET}" = "**None**" ]; then
   echo "You need to set the AWS_BUCKET environment variable."
   exit 1
@@ -33,7 +38,7 @@ if [ -z "${POSTGRES_ENV_POSTGRES_USER}" ]; then
 fi
 
 if [ -z "${POSTGRES_ENV_POSTGRES_PASSWORD}" ]; then
-  echo "You need to set the POSTGRES_ENV_POSTGRES_PASS environment variable."
+  echo "You need to set the POSTGRES_ENV_POSTGRES_PASSWORD environment variable."
   exit 1
 fi
 
@@ -51,9 +56,9 @@ POSTGRES_HOST_OPTS="-h $POSTGRES_PORT_5432_TCP_ADDR -p $POSTGRES_PORT_5432_TCP_P
 
 echo "Starting dump of ${PGDUMP_DATABASE} database(s) from ${POSTGRES_PORT_5432_TCP_ADDR}..."
 
-export PGPASSWORD=${POSTGRES_ENV_POSTGRES_PASSWORD}
+export PGPASSWORD=$(echo "${POSTGRES_ENV_POSTGRES_PASSWORD}" | sed 's/\n$//')
 
-pg_dump $PGDUMP_OPTIONS $POSTGRES_HOST_OPTS $PGDUMP_DATABASE | aws s3 cp - s3://$AWS_BUCKET/$PREFIX/$(date +"%Y")/$(date +"%m")/$(date +"%d").dump || exit 2
+(pg_dump $PGDUMP_OPTIONS $POSTGRES_HOST_OPTS $PGDUMP_DATABASE | aws s3 cp --region $AWS_REGION - s3://$AWS_BUCKET/$PREFIX/$(date +"%Y")/$(date +"%m")/$(date +"%d").dump) || exit 2
 
 echo "Done!"
 
