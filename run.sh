@@ -58,7 +58,7 @@ echo "Starting dump of ${PGDUMP_DATABASE} database(s) from ${POSTGRES_PORT_5432_
 
 export PGPASSWORD=$(echo "${POSTGRES_ENV_POSTGRES_PASSWORD}" | sed 's/\n$//')
 
-(pg_dump $PGDUMP_OPTIONS $POSTGRES_HOST_OPTS $PGDUMP_DATABASE | aws s3 cp --region $AWS_REGION - s3://$AWS_BUCKET/$PREFIX/$(date +"%Y")/$(date +"%m")/$(date +"%d").dump) || exit 2
+(pg_dump $PGDUMP_OPTIONS $POSTGRES_HOST_OPTS $PGDUMP_DATABASE | aws s3 cp --region $AWS_REGION --sse AES256 - s3://$AWS_BUCKET/$PREFIX/$(date +"%Y")/$(date +"%m")/$(date +"%d").dump) || exit 2
 
 echo "Done!"
 
