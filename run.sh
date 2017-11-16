@@ -2,6 +2,14 @@
 
 set -e
 
+if [ "${AWS_INSTANCE_ROLE}" ]; then
+  curl -o /tmp/credentials.json "http://169.254.169.254/latest/meta-data/iam/security-credentials/${AWS_INSTANCE_ROLE}"
+  export AWS_ACCESS_KEY_ID="$(cat /tmp/credentials.json | jq -r ".AccessKeyId")"
+  export AWS_SECRET_ACCESS_KEY="$(cat /tmp/credentials.json | jq -r ".SecretAccessKey")"
+  export AWS_SESSION_TOKEN="$(cat /tmp/credentials.json | jq -r ".Token")"
+  rm -f /tmp/credentials.json
+fi
+
 if [ "${AWS_ACCESS_KEY_ID}" = "**None**" ]; then
   echo "You need to set the AWS_ACCESS_KEY_ID environment variable."
   exit 1
